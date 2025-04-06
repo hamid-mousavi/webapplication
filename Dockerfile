@@ -1,12 +1,14 @@
-# مرحله اول: بیلد پروژه
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /app
+# Stage 1: Build
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+WORKDIR /src
 COPY . .
-RUN dotnet publish -c Release -o /out
+RUN dotnet restore
+RUN dotnet publish -c Release -o /app
 
-# مرحله دوم: اجرای برنامه
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+# Stage 2: Run
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS runtime
 WORKDIR /app
-COPY --from=build /out .
+COPY --from=build /app .
+ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
-CMD ["dotnet", "WebApplication1.dll"]
+ENTRYPOINT ["dotnet", "WebApplication1.dll"]
